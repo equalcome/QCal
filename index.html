@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>問卷計算器</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+      }
+      .container {
+        display: flex;
+        justify-content: space-between;
+      }
+      .questions {
+        flex: 1;
+        padding-right: 20px;
+      }
+      .question {
+        margin-bottom: 20px;
+        font-size: 18px; /* 調整題目的字體大小，讓它更顯眼 */
+        font-weight: bold; /* 增加字體粗細 */
+      }
+      .buttons {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 10px;
+      }
+      .button-group {
+        display: flex;
+        align-items: center;
+        margin-right: 20px; /* 讓每組按鈕之間有更大的距離 */
+      }
+      button {
+        padding: 5px 10px;
+        font-size: 14px;
+        margin-right: 5px; /* 讓加號與減號按鈕之間靠近 */
+      }
+      .click-count {
+        font-weight: bold;
+        margin-top: 10px;
+      }
+      table {
+        border-collapse: collapse;
+        width: 500px;
+        margin-left: 20px;
+      }
+      table,
+      th,
+      td {
+        border: 1px solid black;
+        text-align: center;
+        padding: 5px;
+      }
+      .controls {
+        margin-bottom: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>問卷計算器</h1>
+
+    <!-- 控制項，用戶可以選擇題數 -->
+    <div class="controls">
+      <label for="numQuestions">請選擇題數：</label>
+      <input type="number" id="numQuestions" min="1" value="20" />
+      <button id="generateQuiz">生出題數!!</button>
+    </div>
+
+    <div class="container">
+      <!-- 題目和按鈕部分 -->
+      <div class="questions" id="quiz"></div>
+
+      <!-- 分數表格部分 -->
+      <table id="scoreTable">
+        <thead>
+          <tr>
+            <th>題號</th>
+            <th colspan="11">每題的分數</th>
+          </tr>
+          <tr>
+            <th>題號</th>
+            <th>0</th>
+            <th>1</th>
+            <th>2</th>
+            <th>3</th>
+            <th>4</th>
+            <th>5</th>
+            <th>6</th>
+            <th>7</th>
+            <th>8</th>
+            <th>9</th>
+            <th>10</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- 自動生成表格內容 -->
+        </tbody>
+      </table>
+    </div>
+
+    <script>
+      function createQuiz(numQuestions) {
+        const quizDiv = document.getElementById("quiz");
+        const scoreTableBody = document.querySelector("#scoreTable tbody");
+
+        // 清除舊的問題
+        quizDiv.innerHTML = "";
+        scoreTableBody.innerHTML = "";
+
+        // 生成問題和按鈕
+        for (let i = 0; i < numQuestions; i++) {
+          let totalClicks = 0; // 用來追蹤每題的總點擊次數
+          const questionDiv = document.createElement("div");
+          questionDiv.classList.add("question");
+
+          const questionTitle = document.createElement("p");
+          questionTitle.innerText = `第${i + 1}題`; // 顯示 "第X題"
+          questionDiv.appendChild(questionTitle);
+
+          const buttonsDiv = document.createElement("div");
+          buttonsDiv.classList.add("buttons");
+
+          const scoreRow = document.createElement("tr");
+          const questionCell = document.createElement("td");
+          questionCell.innerText = i + 1;
+          scoreRow.appendChild(questionCell);
+
+          // 增加顯示總點擊次數的欄位
+          const clickCountDisplay = document.createElement("p");
+          clickCountDisplay.classList.add("click-count");
+          clickCountDisplay.innerText = " 0 ";
+
+          for (let j = 0; j <= 10; j++) {
+            const buttonGroup = document.createElement("div");
+            buttonGroup.classList.add("button-group");
+
+            const buttonAdd = document.createElement("button");
+            buttonAdd.innerText = j;
+            buttonAdd.value = j;
+
+            const buttonMinus = document.createElement("button");
+            buttonMinus.innerText = `-`;
+            buttonMinus.style.backgroundColor = "#f44336"; // 給減號按鈕紅色背景
+
+            const scoreCell = document.createElement("td");
+            scoreCell.id = `score-${i + 1}-${j}`;
+            scoreCell.innerText = "0"; // 初始分數為0
+            scoreRow.appendChild(scoreCell);
+
+            // 設定加分按鈕的行為，點擊後對應的按鈕分數加一，並更新總點擊次數
+            buttonAdd.onclick = function () {
+              const scoreCell = document.getElementById(`score-${i + 1}-${j}`);
+              scoreCell.innerText = parseInt(scoreCell.innerText) + 1;
+              totalClicks += 1;
+              clickCountDisplay.innerText = `${totalClicks} `;
+            };
+
+            // 設定減分按鈕的行為，點擊後對應的按鈕分數減一，並減少總點擊次數
+            buttonMinus.onclick = function () {
+              const scoreCell = document.getElementById(`score-${i + 1}-${j}`);
+              const currentScore = parseInt(scoreCell.innerText);
+              if (currentScore > 0) {
+                scoreCell.innerText = currentScore - 1;
+                totalClicks -= 1; // 減少總點擊次數
+                clickCountDisplay.innerText = `${totalClicks} `;
+              }
+            };
+
+            buttonGroup.appendChild(buttonAdd);
+            buttonGroup.appendChild(buttonMinus); // 在加分按鈕旁邊增加減分按鈕
+            buttonsDiv.appendChild(buttonGroup); // 每組按鈕用button-group包裹，讓其之間有距離
+          }
+
+          questionDiv.appendChild(buttonsDiv);
+          questionDiv.appendChild(clickCountDisplay); // 增加點擊次數顯示
+          quizDiv.appendChild(questionDiv);
+
+          // 生成分數表格的每一行
+          scoreTableBody.appendChild(scoreRow);
+        }
+      }
+
+      // 初始化頁面和事件
+      window.onload = function () {
+        const generateButton = document.getElementById("generateQuiz");
+
+        // 綁定生成題目按鈕的點擊事件
+        generateButton.onclick = function () {
+          const numQuestions = parseInt(
+            document.getElementById("numQuestions").value
+          );
+          if (numQuestions > 0) {
+            createQuiz(numQuestions); // 根據用戶選擇的題數生成題目，無限制
+          } else {
+            alert("請輸入有效的題數（必須大於0）");
+          }
+        };
+
+        // 預設顯示20題
+        createQuiz(20);
+      };
+    </script>
+  </body>
+</html>
